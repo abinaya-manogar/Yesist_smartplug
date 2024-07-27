@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Yesist_24 Smart plug</title>
+    <title>Smart Plug Control</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;700&display=swap');
 
@@ -16,8 +16,9 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 100vh;
+            min-height: 100vh; /* Use min-height instead of height */
             color: #333;
+            overflow-x: hidden; /* Prevent horizontal scrolling */
         }
 
         .back-button {
@@ -43,7 +44,6 @@
             font-weight: 700;
             text-align: center;
             position: relative;
-            top: -20px; /* Moved title slightly up */
         }
 
         .main-container {
@@ -53,19 +53,22 @@
             justify-content: center;
             align-items: center;
             padding: 20px;
+            width: 100%; /* Ensure full width for responsiveness */
+            max-width: 1200px; /* Limit max width to prevent overly wide content */
+            box-sizing: border-box;
         }
 
         .container {
-            background: rgba(255, 255, 255, 0.9); /* White background with transparency */
+            background: #fff;
             border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2); /* Slightly stronger shadow for plastic effect */
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
             padding: 30px;
-            width: 350px;
+            width: 300px; /* Uniform width for all containers */
             text-align: center;
             border: 1px solid #ddd;
-            transition: background-color 0.3s, color 0.3s, transform 0.3s;
+            transition: background-color 0.3s, color 0.3s;
             position: relative;
-            backdrop-filter: blur(10px); /* Plasticity effect */
+            flex: 1 1 300px; /* Flex item to adjust its size */
         }
 
         .container .title {
@@ -73,13 +76,13 @@
         }
 
         .container.on {
-            background: rgba(224, 255, 224, 0.9); /* Light green with transparency */
+            background: #e0ffe0;
             color: #2ecc71;
         }
 
         .container.off {
-            background: rgba(255, 255, 255, 0.9); /* Default color to white with transparency */
-            color: #3d3d3d;
+            background: #fff; /* Set default color to white */
+            color: #e74c3c;
         }
 
         .timer-container {
@@ -198,19 +201,18 @@
         }
 
         @media (max-width: 768px) {
-            .container {
-                width: 90%; /* Adjust card width for smaller screens */
-                padding: 20px;
-            }
-        }
-
-        @media (max-width: 480px) {
             .title {
-                font-size: 28px; /* Adjust title size for smaller screens */
+                font-size: 28px;
+                top: 0; /* Ensure title remains visible */
+            }
+
+            .container {
+                width: 90%; /* Make the container wider on small screens */
+                margin-bottom: 20px; /* Add margin for better spacing */
             }
 
             .timer-input {
-                font-size: 16px;
+                font-size: 18px;
             }
 
             .button {
@@ -221,11 +223,37 @@
             .power-button {
                 width: 40px;
                 height: 40px;
-                font-size: 16px;
+                font-size: 18px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .title {
+                font-size: 24px;
+                top: 0; /* Ensure title remains visible */
+            }
+
+            .timer-label {
+                font-size: 14px;
             }
 
             .timer-display {
                 font-size: 18px;
+            }
+
+            .status-indicator {
+                font-size: 14px;
+            }
+
+            .button {
+                padding: 6px 10px;
+                font-size: 12px;
+            }
+
+            .power-button {
+                width: 35px;
+                height: 35px;
+                font-size: 16px;
             }
         }
     </style>
@@ -245,8 +273,8 @@
                 <div id="timerDisplay1" class="timer-display">00:00:00</div>
             </div>
             <div class="button-group">
-                <button id="autoOnButton1" class="button" onclick="autoTurnOn(1)">ON Timer</button>
-                <button id="autoOffButton1" class="button" onclick="autoTurnOff(1)">OFF Timer</button>
+                <button id="autoOnButton1" class="button" onclick="autoTurnOn(1)">Auto Turn On</button>
+                <button id="autoOffButton1" class="button" onclick="autoTurnOff(1)">Auto Turn Off</button>
             </div>
             <div id="statusIndicator1" class="status-indicator">Status: Off</div>
         </div>
@@ -302,63 +330,53 @@
             <div id="statusIndicator4" class="status-indicator">Status: Off</div>
         </div>
     </div>
-
-    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
     <script>
-        let isPoweredOn = [false, false, false, false];
-        let autoMode = [null, null, null, null];
-
-        function formatTime(input, id) {
-            let value = input.value.replace(/\D/g, '');
-            if (value.length > 6) {
-                value = value.slice(0, 6);
-            }
-
-            let hours = value.slice(0, 2).padStart(2, '0');
-            let minutes = value.slice(2, 4).padStart(2, '0');
-            let seconds = value.slice(4, 6).padStart(2, '0');
-
-            input.value = `${hours}:${minutes}:${seconds}`;
-            document.getElementById(`timerDisplay${id}`).innerText = input.value;
-        }
-
-        function autoTurnOn(id) {
-            autoMode[id - 1] = 'on';
-            document.getElementById(`autoOnButton${id}`).classList.add('active');
-            document.getElementById(`autoOffButton${id}`).classList.remove('active');
-            alert(`Auto Turn On Activated for Control ${id}`);
-            // Implement your logic here
-        }
-
-        function autoTurnOff(id) {
-            autoMode[id - 1] = 'off';
-            document.getElementById(`autoOnButton${id}`).classList.remove('active');
-            document.getElementById(`autoOffButton${id}`).classList.add('active');
-            alert(`Auto Turn Off Activated for Control ${id}`);
-            // Implement your logic here
-        }
-
-        function togglePower(id) {
-            isPoweredOn[id - 1] = !isPoweredOn[id - 1];
-            const container = document.getElementById(`container${id}`);
-            const statusIndicator = document.getElementById(`statusIndicator${id}`);
-            if (isPoweredOn[id - 1]) {
-                container.classList.add('on');
-                container.classList.remove('off');
-                statusIndicator.innerText = `Status: On`;
-            } else {
-                container.classList.add('off');
-                container.classList.remove('on');
-                statusIndicator.innerText = `Status: Off`;
-            }
-            // Implement your power toggle logic here
-        }
-
         function goBack() {
-            // Implement your go back logic here
             window.history.back();
+        }
+
+        function togglePower(loadNumber) {
+            const container = document.getElementById(`container${loadNumber}`);
+            const statusIndicator = document.getElementById(`statusIndicator${loadNumber}`);
+            const powerButton = container.querySelector('.power-button');
+
+            if (container.classList.contains('on')) {
+                container.classList.remove('on');
+                container.classList.add('off');
+                statusIndicator.textContent = 'Status: Off';
+                powerButton.classList.remove('active');
+            } else {
+                container.classList.remove('off');
+                container.classList.add('on');
+                statusIndicator.textContent = 'Status: On';
+                powerButton.classList.add('active');
+            }
+        }
+
+        function autoTurnOn(loadNumber) {
+            const button = document.getElementById(`autoOnButton${loadNumber}`);
+            const otherButton = document.getElementById(`autoOffButton${loadNumber}`);
+            button.classList.add('active');
+            otherButton.classList.remove('active');
+        }
+
+        function autoTurnOff(loadNumber) {
+            const button = document.getElementById(`autoOffButton${loadNumber}`);
+            const otherButton = document.getElementById(`autoOnButton${loadNumber}`);
+            button.classList.add('active');
+            otherButton.classList.remove('active');
+        }
+
+        function formatTime(input, loadNumber) {
+            const value = input.value.replace(/[^0-9:]/g, '');
+            const parts = value.split(':');
+            const formattedParts = parts.map(part => part.padStart(2, '0').slice(-2));
+            const formattedTime = formattedParts.join(':');
+            input.value = formattedTime;
+
+            const timerDisplay = document.getElementById(`timerDisplay${loadNumber}`);
+            timerDisplay.textContent = formattedTime;
         }
     </script>
 </body>
 </html>
-
