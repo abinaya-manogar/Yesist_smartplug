@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Plug Control</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;700&display=swap');
+
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background: #f5f5f5; /* Plain light gray background */
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh; /* Use min-height instead of height */
+            color: #333;
+            overflow-x: hidden; /* Prevent horizontal scrolling */
+        }
+
+        .back-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #333;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            transition: color 0.3s;
+        }
+
+        .back-button:hover {
+            color: #555;
+        }
+
+        .title {
+            font-size: 36px; /* Increased font size */
+            margin-bottom: 20px;
+            font-weight: 700;
+            text-align: center;
+            position: relative;
+        }
+
+        .main-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            width: 100%; /* Ensure full width for responsiveness */
+            max-width: 1200px; /* Limit max width to prevent overly wide content */
+            box-sizing: border-box;
+        }
+
+        .container {
+            background: #fff;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            padding: 30px;
+            width: 300px; /* Uniform width for all containers */
+            text-align: center;
+            border: 1px solid #ddd;
+            transition: background-color 0.3s, color 0.3s;
+            position: relative;
+            flex: 1 1 300px; /* Flex item to adjust its size */
+        }
+
+        .container .title {
+            margin-top: 10px; /* Move the title 10px lower */
+        }
+
+        .container.on {
+            background: #e0ffe0;
+            color: #2ecc71;
+        }
+
+        .container.off {
+            background: #fff; /* Set default color to white */
+            color: #e74c3c;
+        }
+
+        .timer-container {
+            margin-bottom: 20px;
+        }
+
+        .timer-label {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .timer-input {
+            width: 80%;
+            padding: 8px;
+            font-size: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            outline: none;
+            transition: border-color 0.3s;
+            text-align: center;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        .timer-input:focus {
+            border-color: #333;
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .button {
+            padding: 10px 15px;
+            background-color: #333;
+            border: none;
+            color: #fff;
+            border-radius: 30px;
+            cursor: pointer;
+            flex: 1;
+            margin: 0 5px;
+            transition: background-color 0.3s, transform 0.3s, box-shadow 0.3s;
+            font-weight: 700;
+            position: relative;
+        }
+
+        .button:hover {
+            background-color: #555;
+            transform: scale(1.05);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+        }
+
+        .button.active::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            right: -10px;
+            bottom: -10px;
+            border-radius: 30px;
+            box-shadow: 0 0 20px 10px rgba(51, 51, 51, 0.8);
+            z-index: -1;
+        }
+
+        .power-button {
+            background-color: #333;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            margin: 0 auto 20px auto;
+            transition: background-color 0.3s, transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .power-button::before {
+            content: '';
+            position: absolute;
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            box-shadow: 0 0 15px rgba(51, 51, 51, 0.5);
+            transition: box-shadow 0.3s;
+        }
+
+        .power-button:hover {
+            background-color: #555;
+            transform: scale(1.1);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+        }
+
+        .power-button.active {
+            background-color: #27ae60;
+        }
+
+        .power-button.active::before {
+            box-shadow: 0 0 25px rgba(46, 204, 113, 0.8);
+        }
+
+        .timer-display {
+            margin-top: 20px;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .status-indicator {
+            font-size: 16px;
+            margin-top: 10px;
+            font-weight: 500;
+        }
+
+        @media (max-width: 768px) {
+            .title {
+                font-size: 28px;
+                top: 0; /* Ensure title remains visible */
+            }
+
+            .container {
+                width: 90%; /* Make the container wider on small screens */
+                margin-bottom: 20px; /* Add margin for better spacing */
+            }
+
+            .timer-input {
+                font-size: 18px;
+            }
+
+            .button {
+                padding: 8px 12px;
+                font-size: 14px;
+            }
+
+            .power-button {
+                width: 40px;
+                height: 40px;
+                font-size: 18px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .title {
+                font-size: 24px;
+                top: 0; /* Ensure title remains visible */
+            }
+
+            .timer-label {
+                font-size: 14px;
+            }
+
+            .timer-display {
+                font-size: 18px;
+            }
+
+            .status-indicator {
+                font-size: 14px;
+            }
+
+            .button {
+                padding: 6px 10px;
+                font-size: 12px;
+            }
+
+            .power-button {
+                width: 35px;
+                height: 35px;
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="back-button" onclick="goBack()">&#9664;</button>
+    <div class="title">YESIST 24</div>
+    <div class="main-container">
+        <div class="container off" id="container1">
+            <div class="title">Load 1</div>
+            <div class="power-button" onclick="togglePower(1)">
+                <i class="fas fa-power-off"></i>
+            </div>
+            <div class="timer-container">
+                <label for="timer1" class="timer-label">Set Timer (HH:MM:SS):</label>
+                <input type="text" id="timer1" class="timer-input" placeholder="00:00:00" maxlength="8" oninput="formatTime(this, 1)">
+                <div id="timerDisplay1" class="timer-display">00:00:00</div>
+            </div>
+            <div class="button-group">
+                <button id="autoOnButton1" class="button" onclick="autoTurnOn(1)">Auto Turn On</button>
+                <button id="autoOffButton1" class="button" onclick="autoTurnOff(1)">Auto Turn Off</button>
+            </div>
+            <div id="statusIndicator1" class="status-indicator">Status: Off</div>
+        </div>
+
+        <div class="container off" id="container2">
+            <div class="title">Load 2</div>
+            <div class="power-button" onclick="togglePower(2)">
+                <i class="fas fa-power-off"></i>
+            </div>
+            <div class="timer-container">
+                <label for="timer2" class="timer-label">Set Timer (HH:MM:SS):</label>
+                <input type="text" id="timer2" class="timer-input" placeholder="00:00:00" maxlength="8" oninput="formatTime(this, 2)">
+                <div id="timerDisplay2" class="timer-display">00:00:00</div>
+            </div>
+            <div class="button-group">
+                <button id="autoOnButton2" class="button" onclick="autoTurnOn(2)">Auto Turn On</button>
+                <button id="autoOffButton2" class="button" onclick="autoTurnOff(2)">Auto Turn Off</button>
+            </div>
+            <div id="statusIndicator2" class="status-indicator">Status: Off</div>
+        </div>
+
+        <div class="container off" id="container3">
+            <div class="title">Load 3</div>
+            <div class="power-button" onclick="togglePower(3)">
+                <i class="fas fa-power-off"></i>
+            </div>
+            <div class="timer-container">
+                <label for="timer3" class="timer-label">Set Timer (HH:MM:SS):</label>
+                <input type="text" id="timer3" class="timer-input" placeholder="00:00:00" maxlength="8" oninput="formatTime(this, 3)">
+                <div id="timerDisplay3" class="timer-display">00:00:00</div>
+            </div>
+            <div class="button-group">
+                <button id="autoOnButton3" class="button" onclick="autoTurnOn(3)">Auto Turn On</button>
+                <button id="autoOffButton3" class="button" onclick="autoTurnOff(3)">Auto Turn Off</button>
+            </div>
+            <div id="statusIndicator3" class="status-indicator">Status: Off</div>
+        </div>
+
+        <div class="container off" id="container4">
+            <div class="title">Load 4</div>
+            <div class="power-button" onclick="togglePower(4)">
+                <i class="fas fa-power-off"></i>
+            </div>
+            <div class="timer-container">
+                <label for="timer4" class="timer-label">Set Timer (HH:MM:SS):</label>
+                <input type="text" id="timer4" class="timer-input" placeholder="00:00:00" maxlength="8" oninput="formatTime(this, 4)">
+                <div id="timerDisplay4" class="timer-display">00:00:00</div>
+            </div>
+            <div class="button-group">
+                <button id="autoOnButton4" class="button" onclick="autoTurnOn(4)">Auto Turn On</button>
+                <button id="autoOffButton4" class="button" onclick="autoTurnOff(4)">Auto Turn Off</button>
+            </div>
+            <div id="statusIndicator4" class="status-indicator">Status: Off</div>
+        </div>
+    </div>
+    <script>
+        function goBack() {
+            window.history.back();
+        }
+
+        function togglePower(loadNumber) {
+            const container = document.getElementById(`container${loadNumber}`);
+            const statusIndicator = document.getElementById(`statusIndicator${loadNumber}`);
+            const powerButton = container.querySelector('.power-button');
+
+            if (container.classList.contains('on')) {
+                container.classList.remove('on');
+                container.classList.add('off');
+                statusIndicator.textContent = 'Status: Off';
+                powerButton.classList.remove('active');
+            } else {
+                container.classList.remove('off');
+                container.classList.add('on');
+                statusIndicator.textContent = 'Status: On';
+                powerButton.classList.add('active');
+            }
+        }
+
+        function autoTurnOn(loadNumber) {
+            const button = document.getElementById(`autoOnButton${loadNumber}`);
+            const otherButton = document.getElementById(`autoOffButton${loadNumber}`);
+            button.classList.add('active');
+            otherButton.classList.remove('active');
+        }
+
+        function autoTurnOff(loadNumber) {
+            const button = document.getElementById(`autoOffButton${loadNumber}`);
+            const otherButton = document.getElementById(`autoOnButton${loadNumber}`);
+            button.classList.add('active');
+            otherButton.classList.remove('active');
+        }
+
+        function formatTime(input, loadNumber) {
+            const value = input.value.replace(/[^0-9:]/g, '');
+            const parts = value.split(':');
+            const formattedParts = parts.map(part => part.padStart(2, '0').slice(-2));
+            const formattedTime = formattedParts.join(':');
+            input.value = formattedTime;
+
+            const timerDisplay = document.getElementById(`timerDisplay${loadNumber}`);
+            timerDisplay.textContent = formattedTime;
+        }
+    </script>
+</body>
+</html>
